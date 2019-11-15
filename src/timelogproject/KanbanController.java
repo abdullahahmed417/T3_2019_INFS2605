@@ -145,196 +145,112 @@ public class KanbanController implements Initializable {
         String details = categories + "\n" + date;
         Button newButton = new Button(details);
         newButton.setMinWidth(120);
-        dragRace = newButton;
+//        dragRace = newButton;
         //Drag work starts here:
-        dragRace.setOnDragDetected(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent event) {
-                System.out.println("onDragDetected");
-                Dragboard db = dragRace.startDragAndDrop(TransferMode.ANY);
-                ClipboardContent content = new ClipboardContent();
-                content.putString(dragRace.getText());
-                db.setContent(content);
+        newButton.setOnDragDetected((MouseEvent event) -> {
+            //We want the textArea to be dragged. Could also be copied.
+            Dragboard db = newButton.startDragAndDrop(TransferMode.MOVE);
 
-                event.consume();
-            }
-        }
-        );
+            // Put a string on a dragboard as an identifier
+            ClipboardContent content = new ClipboardContent();
+            content.putString(newButton.getId());
+            db.setContent(content);
 
-        fpane.setOnDragOver(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragOver-firstPane");
-                if (event.getGestureSource() != fpane
-                        && event.getDragboard().hasString()) {
-                    /* allow for both copying and moving, whatever user chooses */
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                }
-
-                event.consume();
-            }
-        }
-        );
-        spane.setOnDragOver(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragOver-secondPane");
-                if (event.getGestureSource() != spane
-                        && event.getDragboard().hasString()) {
-                    /* allow for both copying and moving, whatever user chooses */
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                }
-
-                event.consume();
-            }
-        }
-        );
-        tpane.setOnDragOver(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragOver-thirdPane");
-                if (event.getGestureSource() != tpane
-                        && event.getDragboard().hasString()) {
-                    /* allow for both copying and moving, whatever user chooses */
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                }
-
-                event.consume();
-            }
-        });
-        fopane.setOnDragOver(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragOver-fourthPane");
-                if (event.getGestureSource() != fopane
-                        && event.getDragboard().hasString()) {
-                    /* allow for both copying and moving, whatever user chooses */
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                }
-
-                event.consume();
-            }
+            //Consume the event
+            event.consume();
         });
 
-        fpane.setOnDragEntered(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragEntered-firstPane");
-                if (event.getGestureSource() != fpane
-                        && event.getDragboard().hasString()) {
-                    fpane.setStyle("Color.GREEN");
-                }
-
-                event.consume();
+        fpane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+            if (event.getGestureSource() != fpane
+                    && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
-        }
-        );
-        spane.setOnDragEntered(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragEntered-secondPane");
-                if (event.getGestureSource() != spane
-                        && event.getDragboard().hasString()) {
-                    spane.setStyle("Color.GREEN");
-                }
-
-                event.consume();
-            }
-        }
-        );
-        tpane.setOnDragEntered(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragEntered-thirdPane");
-                if (event.getGestureSource() != tpane
-                        && event.getDragboard().hasString()) {
-                    tpane.setStyle("Color.GREEN");
-                }
-
-                event.consume();
-            }
-        }
-        );
-        fopane.setOnDragEntered(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragEntered-fourthPane");
-                if (event.getGestureSource() != fopane
-                        && event.getDragboard().hasString()) {
-                    fopane.setStyle("Color.GREEN");
-                }
-
-                event.consume();
-            }
-        }
-        );
-        fpane.setOnDragDropped(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragDropped-firstPane");
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasString()) {
-                    //fpane.setText(db.getString());
-                    success = true;
-                }
-                event.setDropCompleted(success);
-                fpane.getChildren().add(dragRace);
-                event.consume();
-
-            }
-        }
-        );
-        spane.setOnDragDropped(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragDropped-secondPane");
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasString()) {
-                    //fpane.setText(db.getString());
-                    success = true;
-                }
-                event.setDropCompleted(success);
-                spane.getChildren().add(dragRace);
-                event.consume();
-
-            }
-        }
-        );
-        tpane.setOnDragDropped(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragDropped-thirdPane");
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasString()) {
-                    //fpane.setText(db.getString());
-                    success = true;
-                }
-                event.setDropCompleted(success);
-                tpane.getChildren().add(dragRace);
-                event.consume();
-
-            }
-        }
-        );
-        fopane.setOnDragDropped(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragDropped-fourthPane");
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasString()) {
-                    //fpane.setText(db.getString());
-                    success = true;
-                }
-                event.setDropCompleted(success);
-                fopane.getChildren().add(dragRace);
-                event.consume();
-
-            }
-        }
-        );
-        dragRace.setOnDragDone(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                System.out.println("onDragDone");
-                if (event.getTransferMode() == TransferMode.MOVE) {
-                    //newButton.setText("");
-                }
-
-                event.consume();
-            }
-
+            event.consume();
         });
 
+        fpane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+            //Get the dragboard back
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            //Could have some more thorough checks of course.
+            if (db.hasString()) {
+                //Get the textarea and place it into flowPane2 instead
+                fpane.getChildren().add(newButton);
+                success = true;
+            }
+            //Complete and consume the event.
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        spane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+            if (event.getGestureSource() != spane
+                    && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+
+        spane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+            //Get the dragboard back
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            //Could have some more thorough checks of course.
+            if (db.hasString()) {
+                //Get the textarea and place it into flowPane2 instead
+                spane.getChildren().add(newButton);
+                success = true;
+            }
+            //Complete and consume the event.
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        tpane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+            if (event.getGestureSource() != tpane
+                    && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+
+        tpane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+            //Get the dragboard back
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            //Could have some more thorough checks of course.
+            if (db.hasString()) {
+                //Get the textarea and place it into flowPane2 instead
+                tpane.getChildren().add(newButton);
+                success = true;
+            }
+            //Complete and consume the event.
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        fopane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+            if (event.getGestureSource() != fopane
+                    && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+
+        fopane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+            //Get the dragboard back
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            //Could have some more thorough checks of course.
+            if (db.hasString()) {
+                //Get the textarea and place it into flowPane2 instead
+                fopane.getChildren().add(newButton);
+                success = true;
+            }
+            //Complete and consume the event.
+            event.setDropCompleted(success);
+            event.consume();
+        });
         //Drag work ends here
         return newButton;
     }
