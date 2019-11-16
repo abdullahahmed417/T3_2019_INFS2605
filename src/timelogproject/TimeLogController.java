@@ -1,5 +1,6 @@
 package timelogproject;
 
+import java.io.IOException;
 import java.lang.Math;
 import java.net.URL;
 import java.sql.Connection;
@@ -14,28 +15,34 @@ import java.util.logging.Logger;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.paint.Color;
+import timelogproject.PageSwitchHelper;
 
 public class TimeLogController implements Initializable {
 
     private final String URL = "jdbc:sqlite:timelog.db";
     private Connection connection;
-    
+    PageSwitchHelper psh = new PageSwitchHelper();
     // Classes for new category
     @FXML
     private TextField categoryLabel;
     @FXML
     private ColorPicker colorPicker;
-    
+
     // Classes for new entries
     @FXML
     private ComboBox selectCategory;
     @FXML
     private TextArea entryDescription;
+    @FXML
+    private DatePicker startDate;
+    @FXML
+    private DatePicker endDate;
     @FXML
     private ComboBox startTimeH;
     @FXML
@@ -46,7 +53,7 @@ public class TimeLogController implements Initializable {
     private ComboBox endTimeM;
     @FXML
     private Label DurationLabel;
-    
+
     // Classes for new tasks
     @FXML
     private TextField taskTitle;
@@ -60,28 +67,57 @@ public class TimeLogController implements Initializable {
     private DatePicker dueDatePicker;
     @FXML
     private Label sliderIndicatorLabel;
-    
-    
-    
+    @FXML
+    private Button kbBtn, dfBtn, mlBtn, wbdBtn, dbdBtn;
+
+    @FXML
+    private void handleKanbanBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "Kanban.fxml");
+    }
+    @FXML
+    private void handleHelpButtonAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "AboutScreen.fxml");
+    }
+
+    @FXML
+    private void handleDFBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "DeepFocus.fxml");
+    }
+
+    @FXML
+    private void handleMLBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "PieChartView.fxml");
+    }
+
+    @FXML
+    private void handleWBdBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "WeeklyGraphsView.fxml");
+    }
+
+    @FXML
+    private void handleDBdBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "TimeGraphsView.fxml");
+    }
+
     public ArrayList<String> getCategories(String query) throws SQLException {
-        
+
         // create new ArrayList of Strings
         ArrayList<String> catList = new ArrayList<>();
-        
+
         Connection connection = DriverManager.getConnection(URL);
-        
+
         //create statement
         Statement st = connection.createStatement();
-        
+
         System.out.println("** get categories from database **");
         ResultSet rs = st.executeQuery(query);
-        
+
         // Iterate over result set from query
         while (rs.next()) {
-            
+
             // Get individual attributes from each row
             String category = rs.getString("label");
-            
+
             // Populate new category with attributes and add to event array
             catList.add(category);
         }
@@ -89,19 +125,18 @@ public class TimeLogController implements Initializable {
         //close connection 
         st.close();
         connection.close();
-        
+
         // return array of events
         return catList;
     }
-    
+
     private double calculateDuration() {
-        int startH   = Integer.parseInt(startTimeH.getValue().toString());
-        int endH     = Integer.parseInt(endTimeH.getValue().toString());                    
-        int startM   = Integer.parseInt(startTimeM.getValue().toString());
-        int endM     = Integer.parseInt(endTimeM.getValue().toString());
+        int startH = Integer.parseInt(startTimeH.getValue().toString());
+        int endH = Integer.parseInt(endTimeH.getValue().toString());
+        int startM = Integer.parseInt(startTimeM.getValue().toString());
+        int endM = Integer.parseInt(endTimeM.getValue().toString());
 
         // 13:45 to 15:00
-        
         int hours = endH - startH;
         int minutes = endM - startM;
 
@@ -115,7 +150,7 @@ public class TimeLogController implements Initializable {
                     minutes = 0;
                 }
             }
-        }              
+        }
 
         // mins should be 0..59
         if (minutes < 0) {
@@ -126,35 +161,35 @@ public class TimeLogController implements Initializable {
                 minutes = 60 + minutes;
             }
         }
-        
+
         double dur = hours + (minutes / 60.0);
         double rounded = Math.round(dur * 1000.0) / 1000.0;
-        
+
         return rounded;
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        
+
         try {
             // Connect to timelog database
             connection = DriverManager.getConnection(URL);
         } catch (SQLException ex) {
             Logger.getLogger(TimeLogController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         // Populate category list with available categories
         String catQuery = "select * from Categories";
-        
+
         try {
             ArrayList<String> catList = getCategories(catQuery);
             selectCategory.setItems(FXCollections.observableArrayList(catList));
-            
+
         } catch (SQLException e) {
             System.out.println("Error fetching categories from database");
             e.printStackTrace();
         }
-        
+
         ArrayList<String> hoursList = new ArrayList<>();
         int i = 0;
         while (i < 24) {
@@ -188,7 +223,7 @@ public class TimeLogController implements Initializable {
                 sliderIndicatorLabel.textProperty().setValue(currentValue);
             }
         });
-        
+
         // add automatic calculation of totalduration. given start and endtimes.
         startTimeH.valueProperty().addListener(new InvalidationListener() {
             @Override
@@ -201,7 +236,7 @@ public class TimeLogController implements Initializable {
                 }
             }
         });
-        
+
         startTimeM.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable x) {
@@ -213,7 +248,7 @@ public class TimeLogController implements Initializable {
                 }
             }
         });
-        
+
         endTimeH.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable x) {
@@ -225,7 +260,7 @@ public class TimeLogController implements Initializable {
                 }
             }
         });
-        
+
         endTimeM.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable x) {
@@ -251,7 +286,7 @@ public class TimeLogController implements Initializable {
                     + ")";
             Statement statement = connection.createStatement();
             statement.execute(query);
-            
+
             // Populate category list with available categories
             String catQuery = "select * from Categories";
             try {
@@ -262,24 +297,28 @@ public class TimeLogController implements Initializable {
                 System.out.println("Error fetching categories from database");
                 e.printStackTrace();
             }
-            
+
             showAlert(AlertType.INFORMATION, "Category created successfully.", ButtonType.OK);
             clearCategory();
         } catch (Exception ex) {
             showAlert(AlertType.ERROR, ex.getMessage(), ButtonType.OK);
         }
     }
-    
+
     @FXML
     private void saveEntry() {
         try {
-            String setCategory  = selectCategory.getValue().toString();
-            String entryDesc    = entryDescription.getText();
-            double duration     = calculateDuration();
-            
+            String setCategory = selectCategory.getValue().toString();
+            String entryDesc = entryDescription.getText();
+            String startdate = startDate.getValue().toString();
+            String enddate = endDate.getValue().toString();
+            double duration = calculateDuration();
+
             String query = "INSERT INTO entries VALUES("
                     + "'" + setCategory + "'"
                     + ", '" + entryDesc + "'"
+                    + ", '" + startdate + "'"
+                    + ", '" + enddate + "'"
                     + ", '" + duration + "'"
                     + ")";
             Statement statement = connection.createStatement();
@@ -290,20 +329,20 @@ public class TimeLogController implements Initializable {
             showAlert(AlertType.ERROR, ex.getMessage(), ButtonType.OK);
         }
     }
-    
+
     @FXML
     private void saveTask() {
         try {
-            String tasktitle    = taskTitle.getText();
-            String taskDesc     = taskDescription.getText();
-            String dodate       = doDatePicker.getValue().toString();
-            String duedate      = dueDatePicker.getValue().toString();
-            int taskpriority    = (int) taskPriority.getValue();
-            
+            String tasktitle = taskTitle.getText();
+            String taskDesc = taskDescription.getText();
+            String dodate = doDatePicker.getValue().toString();
+            String duedate = dueDatePicker.getValue().toString();
+            int taskpriority = (int) taskPriority.getValue();
+
             System.out.println("About to insert: " + tasktitle + ", " + taskDesc
-                                + ", " + dodate + ", " + duedate + ", " +
-                                taskpriority);
-            
+                    + ", " + dodate + ", " + duedate + ", "
+                    + taskpriority);
+
             String query = "INSERT INTO tasks VALUES("
                     + "'" + tasktitle + "'"
                     + ", '" + taskDesc + "'"
@@ -319,7 +358,7 @@ public class TimeLogController implements Initializable {
             ex.printStackTrace();
         }
     }
-    
+
     @FXML
     private void clearTask() {
         taskTitle.setText("");
@@ -330,13 +369,13 @@ public class TimeLogController implements Initializable {
         dueDatePicker.setValue(null);
         taskPriority.setValue(0);
     }
-    
+
     @FXML
     private void clearCategory() {
         categoryLabel.setText("");
         colorPicker.setValue(Color.WHITE);
     }
-    
+
     @FXML
     private void clearEntry() {
         selectCategory.getSelectionModel().select(-1);
@@ -347,9 +386,7 @@ public class TimeLogController implements Initializable {
         endTimeM.getSelectionModel().select(-1);
         entryDescription.setText("");
     }
-    
-        
-        
+
     private void showAlert(AlertType alertType, String message, ButtonType buttonType) {
         Alert alert = new Alert(alertType, message, buttonType);
         alert.setHeaderText(null);

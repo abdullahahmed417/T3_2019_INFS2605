@@ -81,17 +81,34 @@ import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.util.Pair;
+import java.io.*;
+import java.util.Optional;
+import java.util.Scanner;
+import timelogproject.PageSwitchHelper;
 
 public class KanbanController implements Initializable {
 
     private final String URL = "jdbc:sqlite:timelog.db";
     private Connection connection;
     private final DataFormat buttonFormat = new DataFormat(" ");
+    PageSwitchHelper psh = new PageSwitchHelper();
 
     @FXML
     private FlowPane fpane, spane, tpane, fopane;
     @FXML
-    private Button dragRace;
+    private Button dragBtn;
     @FXML
     private Label dateToday;
     @FXML
@@ -102,6 +119,8 @@ public class KanbanController implements Initializable {
     private Separator tSep;
     @FXML
     private Separator hSep;
+    @FXML
+    private Button timelog, dfBtn, mlBtn, wbdBtn, dBdBtn;
 
     public ArrayList<String> getCategories(String query) throws SQLException {
 
@@ -145,121 +164,156 @@ public class KanbanController implements Initializable {
         String details = categories + "\n" + date;
         Button newButton = new Button(details);
         newButton.setMinWidth(120);
-//        dragRace = newButton;
-        //Drag work starts here:
-        newButton.setOnDragDetected((MouseEvent event) -> {
-            //We want the textArea to be dragged. Could also be copied.
+        newButton.setOnDragDetected(e -> {
             Dragboard db = newButton.startDragAndDrop(TransferMode.MOVE);
-
-            // Put a string on a dragboard as an identifier
-            ClipboardContent content = new ClipboardContent();
-            content.putString(newButton.getId());
-            db.setContent(content);
-
-            //Consume the event
-            event.consume();
+            db.setDragView(newButton.snapshot(null, null));
+            ClipboardContent cc = new ClipboardContent();
+            cc.put(buttonFormat, "button");
+            db.setContent(cc);
+            dragBtn = newButton;
         });
+        newButton.setOnDragDone(e -> dragBtn = null);
 
-        fpane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
-            if (event.getGestureSource() != fpane
-                    && event.getDragboard().hasString()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-
-        fpane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
-            //Get the dragboard back
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            //Could have some more thorough checks of course.
-            if (db.hasString()) {
-                //Get the textarea and place it into flowPane2 instead
-                fpane.getChildren().add(newButton);
-                success = true;
-            }
-            //Complete and consume the event.
-            event.setDropCompleted(success);
-            event.consume();
-        });
-
-        spane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
-            if (event.getGestureSource() != spane
-                    && event.getDragboard().hasString()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-
-        spane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
-            //Get the dragboard back
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            //Could have some more thorough checks of course.
-            if (db.hasString()) {
-                //Get the textarea and place it into flowPane2 instead
-                spane.getChildren().add(newButton);
-                success = true;
-            }
-            //Complete and consume the event.
-            event.setDropCompleted(success);
-            event.consume();
-        });
-
-        tpane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
-            if (event.getGestureSource() != tpane
-                    && event.getDragboard().hasString()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-
-        tpane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
-            //Get the dragboard back
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            //Could have some more thorough checks of course.
-            if (db.hasString()) {
-                //Get the textarea and place it into flowPane2 instead
-                tpane.getChildren().add(newButton);
-                success = true;
-            }
-            //Complete and consume the event.
-            event.setDropCompleted(success);
-            event.consume();
-        });
-
-        fopane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
-            if (event.getGestureSource() != fopane
-                    && event.getDragboard().hasString()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-
-        fopane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
-            //Get the dragboard back
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            //Could have some more thorough checks of course.
-            if (db.hasString()) {
-                //Get the textarea and place it into flowPane2 instead
-                fopane.getChildren().add(newButton);
-                success = true;
-            }
-            //Complete and consume the event.
-            event.setDropCompleted(success);
-            event.consume();
-        });
+        //Drag work starts here:
+//        dragBtn.setOnDragDetected(new EventHandler<MouseEvent>() {
+//            public void handle(MouseEvent event) {
+//                System.out.println("onDragDetected");
+//                Dragboard db = dragBtn.startDragAndDrop(TransferMode.ANY);
+//                ClipboardContent content = new ClipboardContent();
+//                content.putString(dragBtn.getText());
+//                db.setContent(content);
+//
+//                event.consume();
+//            }
+//        }
+//        );
+//
+//        fpane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+//            if (event.getGestureSource() != fpane
+//                    && event.getDragboard().hasString()) {
+//                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+//            }
+//            event.consume();
+//        });
+//
+//        spane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+//            if (event.getGestureSource() != spane
+//                    && event.getDragboard().hasString()) {
+//                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+//            }
+//            event.consume();
+//        });
+//        tpane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+//            if (event.getGestureSource() != tpane
+//                    && event.getDragboard().hasString()) {
+//                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+//            }
+//            event.consume();
+//        });
+//        fopane.addEventHandler(DragEvent.DRAG_OVER, (DragEvent event) -> {
+//            if (event.getGestureSource() != fopane
+//                    && event.getDragboard().hasString()) {
+//                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+//            }
+//            event.consume();
+//        });
+//        fpane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+//            //Get the dragboard back
+//            Dragboard db = event.getDragboard();
+//            boolean success = false;
+//            //Could have some more thorough checks of course.
+//            if (db.hasString()) {
+//                //Get the textarea and place it into flowPane2 instead
+//                fpane.getChildren().add(dragBtn);
+//                success = true;
+//            }
+//            //Complete and consume the event.
+//            event.setDropCompleted(success);
+//            event.consume();
+//        });
+//        spane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+//            //Get the dragboard back
+//            Dragboard db = event.getDragboard();
+//            boolean success = false;
+//            //Could have some more thorough checks of course.
+//            if (db.hasString()) {
+//                //Get the textarea and place it into flowPane2 instead
+//                spane.getChildren().add(dragBtn);
+//                success = true;
+//            }
+//            //Complete and consume the event.
+//            event.setDropCompleted(success);
+//            event.consume();
+//        });
+//        tpane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+//            //Get the dragboard back
+//            Dragboard db = event.getDragboard();
+//            boolean success = false;
+//            //Could have some more thorough checks of course.
+//            if (db.hasString()) {
+//                //Get the textarea and place it into flowPane2 instead
+//                tpane.getChildren().add(dragBtn);
+//                success = true;
+//            }
+//            //Complete and consume the event.
+//            event.setDropCompleted(success);
+//            event.consume();
+//        });
+//        fopane.addEventHandler(DragEvent.DRAG_DROPPED, (DragEvent event) -> {
+//            //Get the dragboard back
+//            Dragboard db = event.getDragboard();
+//            boolean success = false;
+//            //Could have some more thorough checks of course.
+//            if (db.hasString()) {
+//                //Get the textarea and place it into flowPane2 instead
+//                fopane.getChildren().add(dragBtn);
+//                success = true;
+//            }
+//            //Complete and consume the event.
+//            event.setDropCompleted(success);
+//            event.consume();
+//        });
         //Drag work ends here
         return newButton;
+
     }
 
-    /**
-     * Initializes the controller class.
-     */
+    @FXML
+    private void handleTLBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "TimeLogView.fxml");
+    }
+
+    @FXML
+    private void handleDFBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "DeepFocus.fxml");
+    }
+
+    @FXML
+    private void handleMyLifetnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "PieChartView.fxml");
+    }
+
+    @FXML
+    private void handleWBdBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "WeeklyGraphsView.fxml");
+    }
+
+    @FXML
+    private void handleDBdBtnAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "TimeGraphsView.fxml");
+    }
+        @FXML
+    private void handleHelpButtonAction(ActionEvent event) throws IOException {
+        psh.switcher(event, "AboutScreen.fxml");
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        //Initialize all panes to handle dragging
+        paneDragging(fpane);
+        paneDragging(spane);
+        paneDragging(tpane);
+        paneDragging(fopane);
 
         // TODO
         //Sample: to instantiate an object of the button
@@ -271,7 +325,7 @@ public class KanbanController implements Initializable {
 //        initBtn("day following tomorrow", "2019-11-15");
         //to connect to the DB
         try {
-            String query = "SELECT task_title, dueDate FROM Tasks ORDER BY dueDate ASC";
+            String query = "SELECT task_title, dueDate, doDate FROM Tasks ORDER BY dueDate ASC";
 //            Testing:
 //            String query = "SELECT task_title, dueDate FROM Tasks WHERE dueDate ='" + "2019-11-16" + "'";
             connection = DriverManager.getConnection("jdbc:sqlite:timelog.db");
@@ -334,7 +388,6 @@ public class KanbanController implements Initializable {
 
                 }
 
-                //fpane.getChildren().add(initBtn(results.getString(1), results.getString(2)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -349,6 +402,26 @@ public class KanbanController implements Initializable {
 //        Today's date displayed on the label top-left
         dateToday.setText(today.format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
         return fToday;
+    }
+
+    private void paneDragging(Pane pane) {
+        pane.setOnDragOver(e -> {
+            Dragboard db = e.getDragboard();
+            if (db.hasContent(buttonFormat) && dragBtn != null && dragBtn.getParent() != pane) {
+                e.acceptTransferModes(TransferMode.MOVE);
+            }
+        });
+
+        // event handler for when items dragged to pane
+        pane.setOnDragDropped(e -> {
+            Dragboard db = e.getDragboard();
+            if (db.hasContent(buttonFormat)) {
+                ((Pane) dragBtn.getParent()).getChildren().remove(dragBtn);
+                pane.getChildren().add(dragBtn);
+                e.setDropCompleted(true);
+
+            }
+        });
     }
 
 }

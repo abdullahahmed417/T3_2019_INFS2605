@@ -46,14 +46,12 @@
       <Separator fx:id="tSep" layoutX="549.0" layoutY="105.0" orientation="VERTICAL" prefHeight="330.0" prefWidth="15.0" />
       <ToolBar layoutX="1.0" prefHeight="55.0" prefWidth="753.0">
          <items>
-            <Button mnemonicParsing="false" text="Time Log" />
-            <Button mnemonicParsing="false" text="Kanban Board" />
-            <Button mnemonicParsing="false" prefHeight="28.0" prefWidth="96.0" text="Deep Focus" />
-            <Button mnemonicParsing="false" text="My Life" />
-            <Button mnemonicParsing="false" text="Weekly Breakdown" />
-            <Button mnemonicParsing="false" text="Daily Breakdown" />
-            <Button mnemonicParsing="false" text="Weekly Trends" />
-            <Button mnemonicParsing="false" text="About + Help?" />
+            <Button fx:id="timelog" mnemonicParsing="false" onAction="#handleTLBtnAction" text="Time Log" />
+            <Button fx:id="dfBtn" mnemonicParsing="false" onAction="#handleDFBtnAction" prefHeight="28.0" prefWidth="96.0" text="Deep Focus" />
+            <Button fx:id="mlBtn" mnemonicParsing="false" onAction="#handleMyLifetnAction" text="My Life" />
+            <Button fx:id="wbdBtn" mnemonicParsing="false" onAction="#handleWBdBtnAction" text="Weekly Breakdown" />
+            <Button fx:id="dBdBtn" mnemonicParsing="false" onAction="#handleDBdBtnAction" text="Daily Breakdown" />
+            <Button mnemonicParsing="false" onAction="#handleHelpButtonAction" text="About + Help?" />
          </items>
       </ToolBar>
       <Label fx:id="dateToday" layoutX="21.0" layoutY="59.0" text="Label" />
